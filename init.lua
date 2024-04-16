@@ -259,6 +259,59 @@ require('lazy').setup({
         changedelete = { text = '~' },
       },
     },
+    config = function()
+      local gitsigns = require 'gitsigns'
+      gitsigns.setup()
+
+      local function map(mode, l, r, opts)
+        opts = opts or {}
+        -- opts.buffer = bufnr
+        vim.keymap.set(mode, l, r, opts)
+      end
+
+      -- Navigation
+      map('n', ']c', function()
+        if vim.wo.diff then
+          vim.cmd.normal { ']c', bang = true }
+        else
+          gitsigns.nav_hunk 'next'
+        end
+      end)
+
+      map('n', '[c', function()
+        if vim.wo.diff then
+          vim.cmd.normal { '[c', bang = true }
+        else
+          gitsigns.nav_hunk 'prev'
+        end
+      end)
+
+      -- Actions
+      map('n', '<leader>gs', gitsigns.stage_hunk, { desc = '[G]itsigns [S]tage hunk' })
+      map('n', '<leader>gr', gitsigns.reset_hunk, { desc = '[G]itsigns [R]eset hunk' })
+      map('v', '<leader>gs', function()
+        gitsigns.stage_hunk { vim.fn.line '.', vim.fn.line 'v' }
+      end, { desc = '[G]itsigns [S]tage hunk' })
+      map('v', '<leader>gr', function()
+        gitsigns.reset_hunk { vim.fn.line '.', vim.fn.line 'v' }
+      end, { desc = '[G]itsigns [R]eset hunk' })
+      map('n', '<leader>gS', gitsigns.stage_buffer, { desc = '[G]itsigns [S]tage buffer' })
+      map('n', '<leader>gu', gitsigns.undo_stage_hunk, { desc = '[G]itsigns [U]ndo stage hunk' })
+      map('n', '<leader>gR', gitsigns.reset_buffer, { desc = '[G]itsigns [R]eset buffer' })
+      map('n', '<leader>gp', gitsigns.preview_hunk, { desc = '[G]itsigns [P]review hunk' })
+      map('n', '<leader>gb', function()
+        gitsigns.blame_line { full = true }
+      end, { desc = '[G]itsigns [B]lame line' })
+      map('n', '<leader>gc', gitsigns.toggle_current_line_blame, { desc = '[G]itsigns toggle [C]urrent line blame' })
+      map('n', '<leader>gd', gitsigns.diffthis, { desc = '[G]itsigns [D]iff this' })
+      map('n', '<leader>gD', function()
+        gitsigns.diffthis '~'
+      end, { desc = '[G]itsigns [D]iff this' })
+      map('n', '<leader>gt', gitsigns.toggle_deleted, { desc = '[G]itsigns [T]oggle deleted' })
+
+      -- Text object
+      map({ 'o', 'x' }, 'ih', ':<C-U>Gitsigns select_hunk<CR>')
+    end,
   },
 
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
@@ -286,9 +339,11 @@ require('lazy').setup({
       require('which-key').register {
         ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
         ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
+        ['<leader>g'] = { name = '[G]itsigns', _ = 'which_key_ignore' },
         ['<leader>h'] = { name = '[H]arpoon', _ = 'which_key_ignore' },
         ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
         ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
+        ['<leader>t'] = { name = 'Neo[T]est', _ = 'which_key_ignore' },
         ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
       }
     end,
@@ -351,11 +406,14 @@ require('lazy').setup({
         -- You can put your default mappings / updates / etc. in here
         --  All the info you're looking for is in `:help telescope.setup()`
         --
-        -- defaults = {
-        --   mappings = {
-        --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
-        --   },
-        -- },
+        defaults = {
+          mappings = {
+            i = { ['<C-enter>'] = 'to_fuzzy_refine' },
+          },
+          layout_strategy = 'vertical',
+          path_display = { 'truncate' },
+          wrap_results = true,
+        },
         -- pickers = {}
         extensions = {
           ['ui-select'] = {
