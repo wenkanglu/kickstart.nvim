@@ -7,7 +7,17 @@ return {
     'MunifTanjim/nui.nvim',
   },
   config = function()
-    require('neo-tree').setup {}
+    require('neo-tree').setup {
+      close_if_last_window = true,
+      window = {
+        mappings = {
+          ['<space>'] = {
+            'toggle_node',
+            nowait = true,
+          },
+        },
+      },
+    }
 
     vim.keymap.set('n', '<C-n>', '<cmd> Neotree toggle <CR>', { desc = 'Toggle Neotree' })
   end,
