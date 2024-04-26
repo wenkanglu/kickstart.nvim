@@ -198,6 +198,13 @@ vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper win
 vim.keymap.set('i', '<C-b>', '<Esc>^i', { desc = 'Beginning of line' })
 vim.keymap.set('i', '<C-e>', '<End>', { desc = 'End of line' })
 
+local function insertFullPath()
+  local filepath = vim.fn.expand '%'
+  vim.fn.setreg('+', filepath) -- write to clippoard
+end
+
+vim.keymap.set('n', '<leader>p', insertFullPath, { noremap = true, silent = true, desc = 'Copy [P]ath to clipboard' })
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
@@ -421,8 +428,16 @@ require('lazy').setup({
           mappings = {
             i = { ['<C-enter>'] = 'to_fuzzy_refine' },
           },
-          -- layout_strategy = 'vertical',
-          path_display = { 'smart' },
+          layout_strategy = 'vertical',
+          layout_config = {
+            vertical = {
+              height = 0.9,
+              preview_cutoff = 0,
+              prompt_position = 'bottom',
+              width = 0.8,
+            },
+          },
+          path_display = { 'truncate' },
           wrap_results = true,
         },
         -- pickers = {
@@ -545,7 +560,9 @@ require('lazy').setup({
           map('gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
 
           -- Find references for the word under your cursor.
-          map('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
+          map('gr', function()
+            require('telescope.builtin').lsp_references { show_line = false }
+          end, '[G]oto [R]eferences')
 
           -- Jump to the implementation of the word under your cursor.
           --  Useful when your language has ways of declaring types without an actual implementation.
