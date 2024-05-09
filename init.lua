@@ -205,6 +205,11 @@ end
 
 vim.keymap.set('n', '<leader>p', insertFullPath, { noremap = true, silent = true, desc = 'Copy [P]ath to clipboard' })
 
+-- Diagnostic settings
+vim.diagnostic.config {
+  update_in_insert = true,
+}
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
@@ -624,6 +629,30 @@ require('lazy').setup({
       local capabilities = vim.lsp.protocol.make_client_capabilities()
       capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
 
+      local on_attach = function(client, bufnr)
+        vim.bo[bufnr].omnifunc = 'v:lua.vim.lsp.omnifunc'
+
+        --- toggle inlay hints
+        vim.g.inlay_hints_visible = false
+        local function toggle_inlay_hints()
+          if vim.g.inlay_hints_visible then
+            vim.g.inlay_hints_visible = false
+            vim.lsp.inlay_hint.enable(false, { bufnr = bufnr })
+          else
+            if client.server_capabilities.inlayHintProvider then
+              vim.g.inlay_hints_visible = true
+              vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
+            else
+              print 'no inlay hints available'
+            end
+          end
+        end
+
+        local bufopts = { noremap = true, silent = true, buffer = bufnr }
+
+        vim.keymap.set('n', '<leader>i', toggle_inlay_hints, vim.tbl_extend('force', bufopts, { desc = 'Toggle [I]nlay hints' }))
+      end
+
       -- Enable the following language servers
       --  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
       --
@@ -647,6 +676,8 @@ require('lazy').setup({
         --
 
         gopls = {
+          capabilities = capabilities,
+          on_attach = on_attach,
           settings = {
             gopls = {
               analyses = {
@@ -654,6 +685,15 @@ require('lazy').setup({
               },
               staticcheck = true,
               gofumpt = true,
+              hints = {
+                assignVariableTypes = true,
+                compositeLiteralFields = true,
+                compositeLiteralTypes = true,
+                constantValues = true,
+                functionTypeParameters = true,
+                parameterNames = true,
+                rangeVariableTypes = true,
+              },
             },
           },
         },
@@ -662,10 +702,16 @@ require('lazy').setup({
           -- cmd = {...},
           -- filetypes = { ...},
           -- capabilities = {},
+          on_attach = on_attach,
           settings = {
             Lua = {
               completion = {
                 callSnippet = 'Replace',
+              },
+              hint = {
+                enable = true,
+                arrayIndex = 'Enable',
+                setType = true,
               },
               -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
               -- diagnostics = { disable = { 'missing-fields' } },
